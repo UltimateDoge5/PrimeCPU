@@ -1,8 +1,6 @@
 import { ImageResponse } from "@vercel/og";
 import { LogoIconBlack } from "@/components/icons";
 
-export const runtime = "edge";
-
 export function GET(req: Request) {
 	const url = new URL(req.url);
 	const [f, s] = [url.searchParams.get("f") ?? "", url.searchParams.get("s") ?? ""];

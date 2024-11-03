@@ -4,15 +4,16 @@ import { Redis } from "@upstash/redis";
 import { LogoIconBlack } from "../../../../components/icons";
 
 const redis = Redis.fromEnv();
-export const runtime = "edge";
 
-export async function GET(req: Request, { params }: { params: { cpu: string } }) {
-	const { cpu } = params;
-	if (!cpu) return new Response("No CPU specified", { status: 400 });
 
-	const data = await fetchCPUEdge(redis, cpu, false);
+export async function GET(req: Request, props: { params: Promise<{ cpu: string }> }) {
+    const params = await props.params;
+    const { cpu } = params;
+    if (!cpu) return new Response("No CPU specified", { status: 400 });
 
-	return new ImageResponse(
+    const data = await fetchCPUEdge(redis, cpu, false);
+
+    return new ImageResponse(
 		(
 			<div
 				style={{

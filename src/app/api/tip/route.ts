@@ -1,8 +1,6 @@
 import { AMD_PRODUCTS, INTEL_PRODUCTS } from "../../../util/products";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 export function GET(req: Request) {
 	const { searchParams } = new URL(req.url);
 	const manufacturer = searchParams.get("manufacturer");

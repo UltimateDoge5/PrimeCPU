@@ -2,7 +2,7 @@
 import type { CPU, Manufacturer } from "../../CPU";
 import { Fragment, useEffect, useReducer, useRef, useState } from "react";
 import { Transition } from "@headlessui/react";
-import fetchCPU from "../util/fetchCPU";
+import { fetchCPU } from "../util/fetchCPU";
 import { ReloadIcon } from "./icons";
 import { domAnimation, LazyMotion, m, useTime, useTransform } from "framer-motion";
 import { toast } from "react-toastify";

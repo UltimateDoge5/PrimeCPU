@@ -5,7 +5,7 @@ import scrapeIntel from "./scrapers/intel";
 import type { Redis } from "@upstash/redis";
 import type { ScrapeResult } from "@/util/scrapers/result";
 
-const fetchCPU = async (manufacturer: Manufacturer, model: string, noCache = false) => {
+export const fetchCPU = async (manufacturer: Manufacturer, model: string, noCache = false) => {
 	const response = await fetch(`/api/${manufacturer.toLowerCase()}?model=${model}&${noCache ? "no-cache" : ""}`);
 
 	if (!response.ok) {
@@ -54,5 +54,3 @@ export const fetchCPUEdge = async (redis: Redis, model: string, noCache: boolean
 
 	return result.cpu!;
 };
-
-export default fetchCPU;

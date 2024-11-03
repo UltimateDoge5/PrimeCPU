@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 
 const redis = Redis.fromEnv();
-export const runtime = "edge";
+
 export async function GET(req: Request) {
 	const { searchParams } = new URL(req.url);
 	const model = searchParams.get("model");

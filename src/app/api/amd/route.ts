@@ -2,8 +2,7 @@ import scrapeAMD from "../../../util/scrapers/amd";
 import { NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 
-export const runtime = "edge";
-const redis = Redis.fromEnv()
+const redis = Redis.fromEnv();
 
 export async function GET(req: Request) {
 	const { searchParams } = new URL(req.url);

@@ -9,7 +9,6 @@ export const metadata = {
 		icon: "/icon.svg",
 	},
 	metadataBase: new URL("https://prime.pkozak.org"),
-	themeColor: "black",
 	creator: "Piotr Kozak",
 	applicationName: "PrimeCPU",
 };

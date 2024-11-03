@@ -1,55 +1,54 @@
 import { Fragment } from "react";
 import type { CPU } from "../../../../CPU";
-import type { Metadata } from "next";
 import { fetchCPUEdge } from "@/util/fetchCPU";
 import { Redis } from "@upstash/redis";
-import { openGraph, twitter } from "../../shared-metadata";
 import Refetch from "../../../components/refetch";
 import type { Table } from "@/util/renderers";
 import { RenderTable } from "@/util/renderers";
 
 const redis = Redis.fromEnv();
-export const runtime = "edge";
 
-export async function generateMetadata({ searchParams }: { searchParams: { cpu: string } }): Promise<Metadata> {
-	const cpu = await fetchCPUEdge(redis, searchParams.cpu, false);
+// export async function generateMetadata({ searchParams }: { searchParams: { cpu: string } }): Promise<Metadata> {
+// 	console.log(searchParams.cpu);
+// 	const cpu = await fetchCPUEdge(redis, searchParams.cpu, false);
+//
+// 	return {
+// 		title: `${cpu.name} | PrimeCPU`,
+// 		description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
+// 		openGraph: {
+// 			...openGraph,
+// 			title: `${cpu.name} | PrimeCPU`,
+// 			description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
+// 			type: "website",
+// 			url: `https://prime.pkozak.org/cpu/${searchParams.cpu}`,
+// 			images: [
+// 				{
+// 					url: `/cpu/${searchParams.cpu}/image`,
+// 					width: 1200,
+// 					height: 630,
+// 					alt: `${cpu.name} processor description`,
+// 				},
+// 			],
+// 		},
+// 		twitter: {
+// 			...twitter,
+// 			title: `${cpu.name} | PrimeCPU`,
+// 			description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
+// 			images: [
+// 				{
+// 					url: `/cpu/${searchParams.cpu}/image`,
+// 					width: 1200,
+// 					height: 630,
+// 					alt: `${cpu.name} processor description`,
+// 				},
+// 			],
+// 		},
+// 	};
+// }
 
-	return {
-		title: `${cpu.name} | PrimeCPU`,
-		description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
-		openGraph: {
-			...openGraph,
-			title: `${cpu.name} | PrimeCPU`,
-			description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
-			type: "website",
-			url: `https://prime.pkozak.org/cpu/${searchParams.cpu}`,
-			images: [
-				{
-					url: `/cpu/${searchParams.cpu}/image`,
-					width: 1200,
-					height: 630,
-					alt: `${cpu.name} processor description`,
-				},
-			],
-		},
-		twitter: {
-			...twitter,
-			title: `${cpu.name} | PrimeCPU`,
-			description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
-			images: [
-				{
-					url: `/cpu/${searchParams.cpu}/image`,
-					width: 1200,
-					height: 630,
-					alt: `${cpu.name} processor description`,
-				},
-			],
-		},
-	};
-}
-
-const Page = async ({ searchParams }: { searchParams: { cpu: string; refetch: string } }) => {
-	let cpu = await fetchCPUEdge(redis, searchParams.cpu, searchParams.refetch == "true");
+const Page = async ({ params }: { params: Promise<{ cpu: string }> }) => {
+	const cpuName = (await params).cpu;
+	let cpu = await fetchCPUEdge(redis, cpuName, false);
 
 	// Check cpu for null values if there are too many above a certain threshold, refetch
 	let nulls = 0;
@@ -59,7 +58,7 @@ const Page = async ({ searchParams }: { searchParams: { cpu: string; refetch: st
 
 	if (nulls >= 6) {
 		if (cpu.fromCache === true) {
-			cpu = await fetchCPUEdge(redis, searchParams.cpu, true);
+			cpu = await fetchCPUEdge(redis, cpuName, true);
 
 			// Check again
 			nulls = 0;
@@ -80,7 +79,7 @@ const Page = async ({ searchParams }: { searchParams: { cpu: string; refetch: st
 			<main className="text-white">
 				<header className="my-4 flex justify-center gap-4">
 					<h1 className="text-3xl">{cpu.name}</h1>
-					<Refetch modelPath={searchParams.cpu} />
+					<Refetch modelPath={cpuName} />
 				</header>
 				<div className="mx-auto w-full border-0 border-gray-200/50 bg-white/20 p-4 text-lg md:mb-12 md:w-3/5 md:rounded-md md:border md:p-6">
 					<RenderTable cpu={cpu} list={TableStructure} />
@@ -94,7 +93,7 @@ const ErrorScreen = () => (
 	<main className="text-white">
 		<div className="mx-auto mt-6 w-full border-0 border-gray-200/50 bg-white/20 p-4 text-lg md:mb-12 md:w-3/5 md:rounded-md md:border md:p-6">
 			<p className="text-center text-2xl">There was an error fetching the CPU.</p>
-			<p className="text-center"> The recieved data was malformed and unusable</p>
+			<p className="text-center"> The received data was malformed and unusable</p>
 		</div>
 	</main>
 );

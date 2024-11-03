@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { openGraph, twitter } from "./shared-metadata";
 import { redirect } from "next/navigation";
 
-export const runtime = "edge";
 
 export const metadata: Metadata = {
 	title: "Compare any CPU you want | PrimeCPU",
@@ -22,12 +21,13 @@ export const metadata: Metadata = {
 	},
 };
 
-export default function Page({ params }: { params: { models: string } }) {
-	if( params.models !== undefined ) {
+export default async function Page(props: { params: Promise<{ models: string }> }) {
+    const params = await props.params;
+    if( params.models !== undefined ) {
 		redirect(`/${params.models}`)
 	}
 
-	return (
+    return (
 		<Comparison
 			models={[
 				{ manufacturer: "intel", state: "idle", model: "" },
