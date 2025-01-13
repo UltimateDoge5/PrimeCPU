@@ -68,26 +68,17 @@ const Page = async ({ params }: { params: Promise<{ cpu: string }> }) => {
 
 	return (
 		<>
-			<main className="text-white">
+			<main>
 				<header className="my-4 flex justify-center gap-4">
 					<h1 className="text-3xl">{cpu.name}</h1>
 				</header>
-				<div className="mx-auto w-full border-0 border-gray-200/50 bg-white/20 p-4 text-lg md:mb-12 md:w-3/5 md:rounded-md md:border md:p-6">
+				<div className="border-border mx-auto w-full bg-white/20 p-4 text-lg md:mb-12 md:w-3/5 md:rounded-md md:border md:p-6">
 					<RenderTable cpu={cpu} list={TableStructure} />
 				</div>
 			</main>
 		</>
 	);
 };
-
-const ErrorScreen = () => (
-	<main className="text-white">
-		<div className="mx-auto mt-6 w-full border-0 border-gray-200/50 bg-white/20 p-4 text-lg md:mb-12 md:w-3/5 md:rounded-md md:border md:p-6">
-			<p className="text-center text-2xl">There was an error fetching the CPU.</p>
-			<p className="text-center"> The received data was malformed and unusable</p>
-		</div>
-	</main>
-);
 
 const Cores = ({ cpu }: { cpu: CPU }) => {
 	const cores = cpu.cores;
@@ -111,7 +102,7 @@ const Memory = ({ cpu }: { cpu: CPU }) => {
 	return (
 		<div>
 			{cpu.memory.types.map((type) => (
-				<Fragment key={type?.type}>
+				<Fragment key={`${type.type}-${type.speed}`}>
 					<span>
 						{type?.type} at {type?.speed} MHz
 					</span>

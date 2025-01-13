@@ -1,14 +1,8 @@
-import { normaliseIntel } from "@/util/formatting";
-import scrapeIntel from "../../../util/scrapers/intel";
 import { NextResponse } from "next/server";
-import { Redis } from "@upstash/redis";
-
-const redis = Redis.fromEnv();
 
 export async function GET(req: Request) {
 	const { searchParams } = new URL(req.url);
 	const model = searchParams.get("model");
-	const noCache = searchParams.get("no-cache") !== null;
 
 	if (!model || model.length < 3) return new Response("Invalid model", { status: 400 });
 
@@ -19,7 +13,8 @@ export async function GET(req: Request) {
 		return new Response("Invalid model", { status: 400 });
 	}
 
-	const result = await scrapeIntel(redis, normaliseIntel(model), noCache);
-	if (result.error) return new Response(result.error.message, { status: result.error.code });
-	return NextResponse.json(result.cpu);
+	// const result = await scrapeIntel(redis, normaliseIntel(model), noCache);
+	// if (result.error) return new Response(result.error.message, { status: result.error.code });
+
+	return NextResponse.json({});
 }

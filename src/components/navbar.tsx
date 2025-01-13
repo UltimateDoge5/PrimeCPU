@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LogoIcon } from "./icons";
 
 const Navbar = () => (
-	<nav className="h-16 w-full bg-[#252525]/20 backdrop-blur-sm">
+	<nav className="h-16 w-full border-y bg-[#252525] backdrop-blur-sm">
 		<div className="mx-auto flex h-full w-full items-center justify-between px-4 text-white">
 			<div className="flex items-center">
 				<Link href="/" title="PrimeCPU logo">

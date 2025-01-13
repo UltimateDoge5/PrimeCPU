@@ -28,8 +28,8 @@ const Comparison = ({ models }: { models: Selection[] }) => {
 
 	return (
 		<main className="flex flex-col items-center gap-4 pt-4 transition-all md:pt-12">
-			<h1 className="text-center text-4xl font-semibold text-white md:text-6xl">Compare CPUs</h1>
-			<h2 className="mb-4 px-2 text-center text-xl text-white md:text-2xl">Search for a CPU and compare it to another one</h2>
+			<h1 className="text-center text-4xl font-semibold md:text-6xl">Compare CPUs</h1>
+			<h2 className="mb-4 px-2 text-center text-xl md:text-2xl">Search for a CPU and compare it to another one</h2>
 
 			<section className="grid grid-cols-1 gap-4 p-2 md:grid-cols-2 md:gap-8">
 				<Selector
@@ -37,7 +37,7 @@ const Comparison = ({ models }: { models: Selection[] }) => {
 					initialSelection={models[0]}
 					setModelName={(name) => setModelNames((prev) => [name, ...prev.slice(1)])}
 				/>
-				<span className="block text-center text-xl font-semibold text-white md:hidden">VS</span>
+				<span className="block text-center text-xl font-semibold md:hidden">VS</span>
 				<Selector
 					setCPU={(cpu) => setCpus((prev) => [...prev.slice(0, 1), cpu])}
 					initialSelection={models[1]}
@@ -54,9 +54,10 @@ const Comparison = ({ models }: { models: Selection[] }) => {
 					leave="transition-opacity duration-500"
 					leaveFrom="opacity-100"
 					leaveTo="opacity-0"
+					as={"div"}
 				>
-					<h3 className="hidden pb-2 text-center text-2xl text-white sm:block">Table colors</h3>
-					<div className="mb-8 hidden w-fit justify-center gap-6 rounded-lg p-2 text-white sm:flex">
+					<h3 className="hidden pb-2 text-center text-2xl sm:block">Table colors</h3>
+					<div className="mb-8 hidden w-fit justify-center gap-6 rounded-lg p-2 sm:flex">
 						<div className="flex gap-2">
 							<div className="h-6 w-12 rounded bg-green-500" /> Better
 						</div>
@@ -70,11 +71,11 @@ const Comparison = ({ models }: { models: Selection[] }) => {
 				</Transition>
 
 				{cpusFulfilled ? (
-					<div className="mx-auto w-full border-0 border-gray-200/50 bg-white/20 p-4 text-lg text-white md:mb-12 md:w-full md:rounded-md md:border md:p-6">
+					<div className="border-border bg-elevate mx-auto w-full border-0 p-4 text-lg md:mb-12 md:w-full md:rounded-md md:border md:p-6">
 						<RenderTwoColumnTable cpus={cpus as [CPU, CPU]} list={TableStructure} />
 					</div>
 				) : (
-					<h3 className="flex items-center gap-2 text-center text-2xl text-white">Select two CPUs to compare them</h3>
+					<h3 className="flex items-center gap-2 text-center text-2xl">Select two CPUs to compare them</h3>
 				)}
 			</section>
 			<ToastContainer autoClose={2500} position="bottom-left" theme="dark" draggable={false} />
@@ -97,8 +98,8 @@ const Memory = ({ cpus }: { cpus: CPU[] }) => {
 		<>
 			{cpus.map((cpu, i) => (
 				<div key={cpu.name}>
-					{memorySpeeds.map(({ type, a, b }) => (
-						<Fragment key={type}>
+					{memorySpeeds.map(({ type, a, b }, index) => (
+						<Fragment key={`${type}-${index}`}>
 							<span className={i % 2 ? colorDiff(b, a) : colorDiff(a, b)}>
 								{type} at {cpu.name === cpus[0].name ? a : b} MHz
 							</span>
@@ -108,7 +109,7 @@ const Memory = ({ cpus }: { cpus: CPU[] }) => {
 					{cpu.memory.types
 						.filter((type) => !matchingTypes.includes(type?.type))
 						.map((type) => (
-							<Fragment key={type?.type}>
+							<Fragment key={`${type.type}-${type.speed}`}>
 								<span>
 									{type?.type} at {type?.speed} MHz
 								</span>
@@ -141,7 +142,7 @@ const TableStructure: Table<CPU[]> = {
 	General: {
 		launchDate: {
 			title: "Launch Date",
-			path: "launchDate",
+			path: "launchQuarter",
 			type: "string",
 		},
 		market: {

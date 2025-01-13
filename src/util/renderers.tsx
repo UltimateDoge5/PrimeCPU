@@ -25,7 +25,7 @@ export const RenderTable = ({ cpu, list }: { cpu: CPU; list: Table<CPU> }) => (
 			.map((key, i) => (
 				<section key={key}>
 					<h2
-						className={`relative -left-2 md:-left-4 ${i === 0 ? "mt-2" : "mt-4"} mb-1 border-b ${cpu.manufacturer === "intel" ? "border-blue-500" : "border-red-500"} px-2 pb-0.5 text-3xl font-light`}
+						className={`relative -left-2 font-medium md:-left-4 ${i === 0 ? "mt-2" : "mt-4"} mb-1 border-b-[1.5px] ${cpu.manufacturer === "intel" ? "border-blue-500" : "border-red-500"} px-2 pb-0.5 text-3xl font-light`}
 					>
 						{key}
 					</h2>

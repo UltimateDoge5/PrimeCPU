@@ -135,7 +135,7 @@ function Selector({ setCPU, setModelName, initialSelection }: SelectorProps) {
 
 				<Transition
 					as={Fragment}
-					show={autocomplete.data !== undefined}
+					show={showResults && autocomplete.data !== undefined}
 					enter="transition-opacity duration-300"
 					enterFrom="opacity-0"
 					enterTo="opacity-100"
@@ -148,7 +148,8 @@ function Selector({ setCPU, setModelName, initialSelection }: SelectorProps) {
 							previewPositions[searchResults.length - 1]
 						}`}
 					>
-						{autocomplete.data !== undefined &&
+						{showResults &&
+							autocomplete.data !== undefined &&
 							autocomplete.data.map((result) => (
 								<button
 									key={result}

@@ -19,7 +19,7 @@ const Search = ({ initialQuery }: { initialQuery: string }) => {
 	const hasMore = data?.[data.length - 1]?.hasMore;
 
 	return (
-		<div className="mb-8 mt-6 flex w-full flex-col items-center gap-6 text-white">
+		<div className="mb-8 mt-6 flex w-full flex-col items-center gap-6">
 			<h1 className="text-4xl">Search for CPUs</h1>
 			<input
 				type="search"
@@ -33,7 +33,7 @@ const Search = ({ initialQuery }: { initialQuery: string }) => {
 				className="h-14 w-[90%] rounded-md border border-gray-400 bg-slate-700 p-2 text-xl text-white shadow-lg md:w-1/2"
 				placeholder="Search for a CPU"
 			/>
-			<div className="flex w-full flex-col items-center gap-6">
+			<div className="bg-elevate border-border flex w-fit border-collapse flex-col items-center rounded border">
 				{data?.map(({ results }, i) => {
 					return (
 						<Fragment key={i}>
@@ -66,7 +66,7 @@ const CPUItem = ({ name, model, manufacturer }: { name: string; model: string; m
 	return (
 		<div
 			key={model}
-			className={`grid min-h-[4rem] w-[90%] grid-cols-6 grid-rows-1 items-center gap-6 rounded-md border border-slate-600/50 bg-white/5 p-4 transition-colors hover:border-white/50 hover:bg-slate-600/50 md:w-3/4 lg:w-1/2 ${getManufacturerColor(manufacturer)} shadow-md`}
+			className="border-border grid min-h-[4rem] w-fit grid-cols-6 grid-rows-1 items-center gap-6 border px-4 py-2 transition-colors hover:border-white/50"
 		>
 			<h1 className="col-span-3 text-lg font-medium md:text-2xl">
 				<Link href={data?.ref ?? `/cpu/${model.toLowerCase().replaceAll(" ", "-")}`}>{name}</Link>
@@ -84,7 +84,7 @@ const CPUItem = ({ name, model, manufacturer }: { name: string; model: string; m
 					isLoading || error ? "flex h-6 w-24 animate-pulse items-center rounded-md bg-gray-800 text-transparent" : "text-center"
 				}
 			>
-				{data?.launchDate ?? "Date unknown"}
+				{data?.launchQuarter ?? "Date unknown"}
 			</span>
 			{/*<span*/}
 			{/*	className={*/}
@@ -93,6 +93,11 @@ const CPUItem = ({ name, model, manufacturer }: { name: string; model: string; m
 			{/*>*/}
 			{/*	{data?.MSRP ? `${data.MSRP}$` : "Price unavailable"}*/}
 			{/*</span>*/}
+			<button className="border-button group relative top-[2px] inline-block w-auto rounded-[8px] border-[1.5px] bg-primary text-center text-text disabled:cursor-not-allowed disabled:opacity-50">
+				<span className="dark:text-primary-dark dark:hover:text-primary-dark border-button dark:border-orange dark:bg-dark relative mx-[-1.5px] block w-auto -translate-y-1 select-none rounded-[8px] border-[1.5px] bg-white px-5 py-2 text-center text-[15px] font-bold text-primary hover:-translate-y-1.5 hover:text-primary active:-translate-y-0.5 active:transition-all active:duration-100 group-disabled:hover:!-translate-y-1">
+					Add to comparison
+				</span>
+			</button>
 		</div>
 	);
 };

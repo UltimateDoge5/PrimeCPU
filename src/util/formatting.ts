@@ -10,7 +10,7 @@ export const formatNumber = (num: number | null, unit: string) => {
 };
 
 export const colorDiff = (a: number | null | undefined, b: number | null | undefined, invert = false) => {
-	if (a === b) return "text-gray-50";
+	if (a === b) return "text-slate-600/80";
 	if (typeof a !== "number" || typeof b !== "number") return "text-yellow-500";
 	return (invert ? b > a : a > b) ? "text-green-500" : "text-red-500";
 };

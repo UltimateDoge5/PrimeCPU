@@ -12,11 +12,11 @@ export interface CPU {
 	baseFrequency: number | null;
 	maxFrequency: number | null;
 	tdp: number | null;
-	launchDate: string;
+	launchDate: string | null;
+	launchQuarter: string;
 	memory: Memory;
 	graphics: false | Graphics;
 	source: string;
-	schemaVer: number;
 	// Url to the cpu page
 	scrapedAt?: string;
 	ref: string;

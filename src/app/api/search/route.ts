@@ -17,11 +17,22 @@ export async function GET(req: Request) {
 	const skipItems = pInt * itemsPerPage;
 
 	const collection = client.db("primecpu").collection("cpus");
+	if (q === "") {
+		return await collection
+			.find({
+				$sort: { launchDate: -1 },
+				$limit: 5,
+				$project: { name: 1, model: 1, manufacturer: 1 },
+			})
+			.toArray();
+	}
+
 	const agg = [
 		{ $search: { index: "default", search: { query: q, path: "name" } } },
 		{ $skip: skipItems },
 		{ $limit: itemsPerPage + 1 }, // Fetch one more document than itemsPerPage
 		{ $project: { name: 1, model: 1, manufacturer: 1 } },
+		{ $sort: { launchDate: -1 } },
 	];
 
 	const results = await collection.aggregate(agg).toArray();

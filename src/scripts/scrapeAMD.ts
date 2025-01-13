@@ -11,6 +11,8 @@ const prefixes = {
 	g: 1e9,
 };
 
+const unescapeNull = (value: string | null) => (value ? unescape(value) : null);
+
 // Due to the recent changes in the AMD website, the scraping code is broken.
 // While analyzing the website, I found that the data on the cpus is available in the form of 7MB of embedded JSON data in a data tag.
 // There even exists data for cpus that do not have a product page.
@@ -75,8 +77,6 @@ function scrapeCpusFromSpecs(items: any[]) {
 			continue;
 		}
 
-		// if (!name.includes("7840U")) continue;
-
 		const cpu: CPU = {
 			name,
 			model: name.toLowerCase().replaceAll(" ", "-"),
@@ -94,12 +94,14 @@ function scrapeCpusFromSpecs(items: any[]) {
 			maxFrequency: multiplyByPrefix(item.elements.maxBoostClock.formatValue),
 			lithography: item.elements.processorTechnologyForCpuCores.formatValue,
 			cache: multiplyByPrefix(item.elements.l3Cache.formatValue),
-			launchDate: getLaunchDate(item.elements.launchDate.formatValue),
+			launchQuarter: getLaunchDate(item.elements.launchDate.formatValue, "quarter")!,
+			// For sorting purposes
+			launchDate: getLaunchDate(item.elements.launchDate.formatValue, "date"),
 			memory: {
 				types: getMemoryDetails(
-					item.elements.systemMemoryType?.formatValue,
+					unescapeNull(item.elements.systemMemoryType?.formatValue),
 					safeParseFloat(item.elements.systemMemorySpecification?.formatValue),
-					item.elements.maxMemorySpeed?.formatValue
+					unescapeNull(item.elements.maxMemorySpeed?.formatValue)
 				),
 				maxSize: multiplyByPrefix(item.elements.maxMemory?.formatValue),
 			},
@@ -114,7 +116,6 @@ function scrapeCpusFromSpecs(items: any[]) {
 			source: item.productPages.en ?? "https://www.amd.com/en/products/specifications/processors.html",
 			ref: "/cpu/" + name.toLowerCase().replaceAll(" ", "-"),
 			scrapedAt: new Date().toJSON(),
-			schemaVer: parseFloat(Deno.env.get("MIN_SCHEMA_VERSION")!),
 		} satisfies CPU;
 
 		cpus.push(cpu);
@@ -165,9 +166,20 @@ function multiplyByPrefix(value: string) {
 	return parseFloat(number) * (prefixes[prefix as keyof typeof prefixes] ?? 1);
 }
 
-function getLaunchDate(string: string) {
-	if (!string) return "Unknown";
-	if (/Q\d \d{4}/.test(string)) return string;
+function getLaunchDate(string: string, format: "quarter" | "date") {
+	if (!string) return format === "quarter" ? "Unknown" : null;
+	if (/Q\d \d{4}/.test(string)) {
+		if (format === "quarter") return string;
+		const [quarter, year] = string.split(" ");
+		return `${year}-${(parseInt(quarter[1]) * 3).toString().padStart(2, "0")}-01`;
+	}
+
+	// Format: Q217
+	if (string.startsWith("Q") && string.length === 4) {
+		const quarter = parseInt(string[1]);
+		const year = parseInt(string.substring(2));
+		return format === "quarter" ? string : `${year}-0${quarter * 3}-01`;
+	}
 
 	// Format: 11/5/2020
 	const date = new Date(string);
@@ -182,7 +194,8 @@ function getLaunchDate(string: string) {
 		year = parseInt(dates[1]);
 	}
 
-	if (year == 1970) return "Unknown";
+	if (year == 1970) return format === "quarter" ? "Unknown" : null;
+	if (format === "date") return `${year}-${month.toString().padStart(2, "0")}-01`;
 	const quarter = Math.floor((month + 2) / 3) + 1;
 	return `Q${quarter}'${year.toString().substring(2)}`;
 }
@@ -204,6 +217,10 @@ if (mode === "dump" || mode === "1") {
 	const data = await Deno.readFile("amd-cpus.json");
 	const items = JSON.parse(decoder.decode(data));
 	const cpus = scrapeCpusFromSpecs(items);
+
+	let validDates = cpus.filter((cpu) => cpu.launchDate !== null).length;
+	console.log(((validDates / cpus.length) * 100).toFixed(2) + "% of the cpus have a valid launch date");
+
 	uploadCpusToDB(cpus);
 } else if (mode === "scrapeFromWeb" || mode === "3") {
 	const items = await fetchSpecsFromAmd();

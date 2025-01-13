@@ -100,3 +100,27 @@ test("Memory variant no.4", () => {
 		},
 	]);
 });
+/**
+ *
+ *
+ * Max Memory Speed: [{"memoryKey2":"2x1R","memoryType":["DDR5-5600"]},{"memoryKey2":"2x2R","memoryType":["DDR5-5600"]},{"memoryKey2":"4x1R","memoryType":["DDR5-3600"]},{"memoryKey2":"4x2R","memoryType":["DDR5-3600"]}]
+ * Source {@link https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-9-9900x.html}
+ */
+test("Memory variant no.5", () => {
+	const result = getMemoryDetails(
+		"DDR5",
+		null,
+		'[{"memoryKey2":"2x1R","memoryType":["DDR5-5600"]},{"memoryKey2":"2x2R","memoryType":["DDR5-5600"]},{"memoryKey2":"4x1R","memoryType":["DDR5-3600"]},{"memoryKey2":"4x2R","memoryType":["DDR5-3600"]}]'
+	);
+
+	expect(result).toEqual([
+		{
+			type: "DDR5",
+			speed: 5600,
+		},
+		{
+			type: "DDR5",
+			speed: 3600,
+		}
+	]);
+});
