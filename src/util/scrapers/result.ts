@@ -1,4 +1,4 @@
-import type { CPU } from "../../../CPU";
+import type { CPU } from "@/types/cpu";
 
 export const reject = (error: ScrapeResult["error"]): ScrapeResult => ({ cpu: null, error });
 

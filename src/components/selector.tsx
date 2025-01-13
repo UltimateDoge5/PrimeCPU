@@ -1,16 +1,19 @@
 "use client";
-import type { CPU, Manufacturer } from "../../CPU";
+import type { CPU, Manufacturer } from "@/types/cpu";
 import { Fragment, useEffect, useReducer, useRef, useState } from "react";
 import { Transition } from "@headlessui/react";
-import { fetchCPU } from "../util/fetchCPU";
-import { ReloadIcon } from "./icons";
-import { domAnimation, LazyMotion, m, useTime, useTransform } from "framer-motion";
+import { fetchCPU } from "@/util/fetchCPU";
 import { toast } from "react-toastify";
+import useSWR from "swr";
 
-const Selector = ({ setCPU, setModelName, initialSelection }: SelectorProps) => {
+const fetcher = (model: string) => fetch(`/api/autocomplete?model=${model}`).then((res) => res.json());
+
+function Selector({ setCPU, setModelName, initialSelection }: SelectorProps) {
 	const [selection, setSelection] = useReducer((prev: Selection, next: Partial<Selection>) => ({ ...prev, ...next }), initialSelection);
-
 	const [tempModel, setTempModel] = useState(initialSelection.model);
+	const autocomplete = useSWR(["autocomplete", tempModel], ([_, model]) => fetcher(model), {
+		revalidateOnFocus: false,
+	});
 	const [countdownBarPercent, setCountdownBarPercent] = useState(100);
 	const [refetch, setRefetch] = useState(false);
 
@@ -71,69 +74,30 @@ const Selector = ({ setCPU, setModelName, initialSelection }: SelectorProps) => 
 	}, [selection.manufacturer, selection.model]);
 
 	// Manage the search tip results
-	useEffect(() => {
-		if (selection.state !== "loading" && tempModel.length > 3) {
-			// Cancel the previous search
-			clearTimeout(searchRef.current);
-
-			// Start a new search
-			// eslint-disable-next-line @typescript-eslint/no-misused-promises
-			searchRef.current = window.setTimeout(async () => {
-				const res = await fetch(`/api/tip?manufacturer=${selection.manufacturer}&model=${tempModel}`);
-
-				if (!res.ok) return setSearchResults([]);
-				const tips = (await res.json()) as string[];
-				// Sort the results by length. Make sure the exact match is first
-				// Check for the exact match first
-				const exactMatch = tips.findIndex((r) => r.toLowerCase() === tempModel.toLowerCase());
-				if (exactMatch !== -1) {
-					const sorted = [...tips.splice(exactMatch, 1), ...tips.sort((a, b) => a.length - b.length)];
-					setSearchResults(sorted);
-				} else {
-					setSearchResults(tips.sort((a, b) => a.length - b.length));
-				}
-			}, 350);
-		}
-	}, [selection, tempModel]);
-
-	const RefetchButton = () => {
-		const time = useTime();
-		const rotate = useTransform(time, [0, 2000], [0, 360], { clamp: false });
-
-		return (
-			<button
-				onClick={() => {
-					setRefetch(true);
-					fetchCPU(selection.manufacturer, selection.model, true)
-						.then((cpu) => {
-							setRefetch(false);
-							if (cpu.error) {
-								toast.error(
-									cpu.error.code === 504 ? "The server is taking too long to respond. Try again later." : cpu.error.text
-								);
-								return;
-							}
-							toast.success("Successfully re-fetched the CPU!");
-							setCPU(cpu.data);
-						})
-						.catch(() => {
-							setRefetch(false);
-							toast.error("An error occurred while fetching the CPU. Try again later.");
-						});
-				}}
-				title="Reload data without cache"
-				disabled={selection.state !== "success" || refetch}
-				className="hidden rounded-md border border-gray-400/20 bg-gray-400/20 p-2 transition-all
-			 enabled:cursor-pointer enabled:hover:bg-gray-200/50 disabled:cursor-not-allowed disabled:opacity-50 md:block"
-			>
-				<LazyMotion features={domAnimation}>
-					<m.div style={{ rotate: refetch ? rotate : 0 }}>
-						<ReloadIcon className="h-5 w-5 text-white/60" />
-					</m.div>
-				</LazyMotion>
-			</button>
-		);
-	};
+	// useEffect(() => {
+	// 	if (selection.state !== "loading" && tempModel.length > 3) {
+	// 		// Cancel the previous search
+	// 		clearTimeout(searchRef.current);
+	//
+	// 		// Start a new search
+	// 		// eslint-disable-next-line @typescript-eslint/no-misused-promises
+	// 		searchRef.current = window.setTimeout(async () => {
+	// 			const res = await fetch(`/api/autocomplete?manufacturer=${selection.manufacturer}&model=${tempModel}`);
+	//
+	// 			if (!res.ok) return setSearchResults([]);
+	// 			const tips = (await res.json()) as string[];
+	// 			// Sort the results by length. Make sure the exact match is first
+	// 			// Check for the exact match first
+	// 			const exactMatch = tips.findIndex((r) => r.toLowerCase() === tempModel.toLowerCase());
+	// 			if (exactMatch !== -1) {
+	// 				const sorted = [...tips.splice(exactMatch, 1), ...tips.sort((a, b) => a.length - b.length)];
+	// 				setSearchResults(sorted);
+	// 			} else {
+	// 				setSearchResults(tips.sort((a, b) => a.length - b.length));
+	// 			}
+	// 		}, 350);
+	// 	}
+	// }, [selection, tempModel]);
 
 	return (
 		<div className={`relative flex items-center gap-3 rounded-md border p-4 transition-colors ${getMarkings(selection.state)}`}>
@@ -171,7 +135,7 @@ const Selector = ({ setCPU, setModelName, initialSelection }: SelectorProps) => 
 
 				<Transition
 					as={Fragment}
-					show={searchTipVisible}
+					show={autocomplete.data !== undefined}
 					enter="transition-opacity duration-300"
 					enterFrom="opacity-0"
 					enterTo="opacity-100"
@@ -184,23 +148,23 @@ const Selector = ({ setCPU, setModelName, initialSelection }: SelectorProps) => 
 							previewPositions[searchResults.length - 1]
 						}`}
 					>
-						{searchResults.map((result) => (
-							<button
-								key={result}
-								className="cursor-pointer rounded-md p-2 hover:bg-gray-300 focus:bg-gray-200"
-								onClick={() => {
-									setTempModel(result);
-									setSelection({ model: result, state: "loading" });
-									setShowResults(false);
-								}}
-							>
-								{result}
-							</button>
-						))}
+						{autocomplete.data !== undefined &&
+							autocomplete.data.map((result) => (
+								<button
+									key={result}
+									className="cursor-pointer rounded-md p-2 hover:bg-gray-300 focus:bg-gray-200"
+									onClick={() => {
+										setTempModel(result);
+										setSelection({ model: result, state: "loading" });
+										setShowResults(false);
+									}}
+								>
+									{result}
+								</button>
+							))}
 					</div>
 				</Transition>
 			</div>
-			<RefetchButton />
 			<Transition
 				as={Fragment}
 				show={barVisible}
@@ -220,7 +184,7 @@ const Selector = ({ setCPU, setModelName, initialSelection }: SelectorProps) => 
 			</Transition>
 		</div>
 	);
-};
+}
 
 const previewPositions = ["", "-left-1/4", "-left-1/2"];
 

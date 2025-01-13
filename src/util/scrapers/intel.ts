@@ -1,18 +1,22 @@
+"use server";
 import type { CheerioAPI } from "cheerio";
 import { load } from "cheerio";
-import type { CPU, Memory } from "../../../CPU";
+import type { CPU, Memory } from "@/types/cpu";
 import { normaliseMarket } from "../formatting";
 import elementSelector from "../selectors";
 import type { Redis } from "@upstash/redis";
 import { reject, resolve, type ScrapeResult } from "./result";
+import client from "@/util/mongo";
 
 let $: CheerioAPI;
 
 const scrapeIntel = async (redis: Redis, model: string, noCache: boolean): Promise<ScrapeResult> => {
+	const mongoClient = await client.connect();
+	const collection = mongoClient.db("primecpu").collection("cpus");
+
 	if (!noCache) {
-		const cache = (await redis.json.get(`intel-${model.replace(/ /g, "-")}`, "$")) as [CPU] | null;
-		const cpu = cache?.[0];
-		if (cpu !== undefined && cpu?.schemaVer === parseFloat(process.env.MIN_SCHEMA_VERSION)) return resolve({ ...cpu, fromCache: true });
+		const cpu = await collection.findOne<CPU>({ model: model.replaceAll(" ", "-") });
+		if (cpu !== null && cpu?.schemaVer === parseFloat(process.env.MIN_SCHEMA_VERSION)) return resolve({ ...cpu, fromCache: true });
 	}
 
 	const token = (await redis.get<string>("intel-token")) ?? (await refreshToken(redis));
@@ -74,7 +78,8 @@ const scrapeIntel = async (redis: Redis, model: string, noCache: boolean): Promi
 	// Get the data
 	const page = await fetch(url, {
 		headers: {
-			"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+			"User-Agent":
+				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 		},
 	});
 
@@ -102,8 +107,9 @@ const scrapeIntel = async (redis: Redis, model: string, noCache: boolean): Promi
 
 	const cpu: CPU = {
 		name: cpuName,
+		model,
 		manufacturer: "intel",
-		MSRP: getPrice(getParameter("Recommended Customer Price")),
+		msrp: getPrice(getParameter("Recommended Customer Price")),
 		marketSegment: normaliseMarket(getParameter("Vertical Segment")),
 		lithography: getParameter("Lithography"),
 		cache: getFloatParameter("Cache"),
@@ -123,12 +129,14 @@ const scrapeIntel = async (redis: Redis, model: string, noCache: boolean): Promi
 		},
 		graphics,
 		source: url,
-		ref: "/cpu/intel-" + model,
-		scrapedAt: new Date().toString(),
+		// Sometimes another "intel" sneaks into the url, this is probably my fault
+		ref: "/cpu/intel-" + model.replace("intel", ""),
+		scrapedAt: new Date().toJSON(),
 		schemaVer: parseFloat(process.env.MIN_SCHEMA_VERSION),
 	};
 
-	if (process.env.NODE_ENV !== "test") await redis.json.set(`intel-${model}`, "$", cpu as unknown as Record<string, never>);
+	// if (process.env.NODE_ENV !== "test") await redis.json.set(`intel-${model}`, "$", cpu as unknown as Record<string, never>);
+	if (process.env.NODE_ENV !== "test") await collection.updateOne({ name: model }, { $set: cpu }, { upsert: true });
 	return resolve({ ...cpu, fromCache: false });
 };
 

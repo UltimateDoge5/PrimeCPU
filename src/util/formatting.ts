@@ -1,4 +1,4 @@
-import type { MarketType } from "../../CPU";
+import type { MarketType } from "@/types/cpu";
 
 export const formatNumber = (num: number | null, unit: string) => {
 	if (num === null) return "N/A " + unit;
@@ -41,7 +41,7 @@ export const normaliseMarket = (market: string | null): MarketType | null => {
 	}
 };
 
-export const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+export const capitalize = (str: string) => (str ? str.charAt(0).toUpperCase() + str.slice(1) : str);
 
 // Make the names look nice
 export const beautifyNames = (name: string) => {

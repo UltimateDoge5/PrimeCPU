@@ -1,19 +1,18 @@
 import { ImageResponse } from "@vercel/og";
-import { fetchCPUEdge } from "../../../../util/fetchCPU";
+import { fetchCPUServer } from "../../../../util/fetchCPU";
 import { Redis } from "@upstash/redis";
 import { LogoIconBlack } from "../../../../components/icons";
 
 const redis = Redis.fromEnv();
 
-
 export async function GET(req: Request, props: { params: Promise<{ cpu: string }> }) {
-    const params = await props.params;
-    const { cpu } = params;
-    if (!cpu) return new Response("No CPU specified", { status: 400 });
+	const params = await props.params;
+	const { cpu } = params;
+	if (!cpu) return new Response("No CPU specified", { status: 400 });
 
-    const data = await fetchCPUEdge(redis, cpu, false);
+	const data = await fetchCPUServer(redis, cpu, false);
 
-    return new ImageResponse(
+	return new ImageResponse(
 		(
 			<div
 				style={{

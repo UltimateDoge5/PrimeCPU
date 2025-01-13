@@ -1,4 +1,4 @@
-import type { CPU } from "../../CPU";
+import type { CPU } from "@/types/cpu";
 import type { JSX } from "react";
 import { Fragment } from "react";
 import Tooltip from "../components/tooltip";
@@ -25,9 +25,7 @@ export const RenderTable = ({ cpu, list }: { cpu: CPU; list: Table<CPU> }) => (
 			.map((key, i) => (
 				<section key={key}>
 					<h2
-						className={`relative -left-2 md:-left-4 ${i === 0 ? "mt-2" : "mt-4"} mb-1 border-b
-						${cpu.manufacturer === "intel" ? "border-blue-500" : "border-red-500"}
-						px-2 pb-0.5 text-3xl font-light`}
+						className={`relative -left-2 md:-left-4 ${i === 0 ? "mt-2" : "mt-4"} mb-1 border-b ${cpu.manufacturer === "intel" ? "border-blue-500" : "border-red-500"} px-2 pb-0.5 text-3xl font-light`}
 					>
 						{key}
 					</h2>
@@ -74,7 +72,7 @@ export const RenderTable = ({ cpu, list }: { cpu: CPU; list: Table<CPU> }) => (
 											{currentRow.title}
 											{currentRow.tooltip !== undefined && <Tooltip tip={currentRow.tooltip} />}
 										</span>
-										<span>{currentRow.capitalize === true ? capitalize(value as string) : value}</span>
+										<span>{currentRow.capitalize === true ? capitalize(value) : value}</span>
 									</div>
 								);
 
@@ -107,7 +105,7 @@ export const RenderTwoColumnTable = ({ cpus, list }: { cpus: [CPU, CPU]; list: T
 			<section key={key} className="grid grid-cols-3">
 				<h3
 					className={`relative -left-2 md:-left-4 ${
-						i === 0 ? "mt-2 grid grid-cols-3 " : "mt-4"
+						i === 0 ? "mt-2 grid grid-cols-3" : "mt-4"
 					} col-span-3 mb-0.5 border-b px-2 text-3xl font-light`}
 				>
 					{key}
@@ -171,8 +169,8 @@ export const RenderTwoColumnTable = ({ cpus, list }: { cpus: [CPU, CPU]; list: T
 							);
 						}
 						case "string": {
-							const firstStr = traversePath(currentRow.path, cpus[0]) as string ;
-							const secondStr = traversePath(currentRow.path, cpus[1]) as string ;
+							const firstStr = traversePath(currentRow.path, cpus[0]) as string;
+							const secondStr = traversePath(currentRow.path, cpus[1]) as string;
 							console.log(currentRow.path, firstStr, secondStr);
 
 							return (
@@ -210,7 +208,7 @@ export const RenderTwoColumnTable = ({ cpus, list }: { cpus: [CPU, CPU]; list: T
 
 // No need to type this function
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-explicit-any
-const traversePath = (path: string, obj:any): number | string => path.split(".").reduce((prev, curr) => prev?.[curr], obj);
+const traversePath = (path: string, obj: any): number | string => path.split(".").reduce((prev, curr) => prev?.[curr], obj);
 
 export type Table<T extends CPU | CPU[]> = Record<string, Record<string, Row<T>>>;
 

@@ -1,6 +1,8 @@
 export interface CPU {
-	name: string | null;
-	MSRP: number | null;
+	name: string;
+	// Normalised name of the CPU
+	model: string;
+	msrp: number | null;
 	marketSegment: MarketType | null;
 	lithography: string | null;
 	manufacturer: Manufacturer;
@@ -17,17 +19,16 @@ export interface CPU {
 	schemaVer: number;
 	// Url to the cpu page
 	scrapedAt?: string;
-	fromCache?: boolean;
 	ref: string;
 }
 
-interface Cores {
+export interface Cores {
 	total: number | null;
 	efficient: number | null;
 	performance: number | null;
 }
 
-interface Memory {
+export interface Memory {
 	types: {
 		speed: number;
 		type: string;

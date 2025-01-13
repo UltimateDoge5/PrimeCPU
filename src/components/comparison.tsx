@@ -1,6 +1,6 @@
 "use client";
 import { Fragment, useEffect, useState } from "react";
-import type { CPU, Graphics } from "../../CPU";
+import type { CPU, Graphics } from "@/types/cpu";
 import type { Selection } from "./selector";
 import Selector from "./selector";
 import { Transition } from "@headlessui/react";
@@ -27,7 +27,7 @@ const Comparison = ({ models }: { models: Selection[] }) => {
 	}, [modelNames]);
 
 	return (
-		<main className="flex flex-col items-center gap-4 pt-4 transition-all md:pt-12 ">
+		<main className="flex flex-col items-center gap-4 pt-4 transition-all md:pt-12">
 			<h1 className="text-center text-4xl font-semibold text-white md:text-6xl">Compare CPUs</h1>
 			<h2 className="mb-4 px-2 text-center text-xl text-white md:text-2xl">Search for a CPU and compare it to another one</h2>
 
@@ -74,7 +74,7 @@ const Comparison = ({ models }: { models: Selection[] }) => {
 						<RenderTwoColumnTable cpus={cpus as [CPU, CPU]} list={TableStructure} />
 					</div>
 				) : (
-					<h3 className="flex items-center gap-2 text-center text-2xl text-white ">Select two CPUs to compare them</h3>
+					<h3 className="flex items-center gap-2 text-center text-2xl text-white">Select two CPUs to compare them</h3>
 				)}
 			</section>
 			<ToastContainer autoClose={2500} position="bottom-left" theme="dark" draggable={false} />
@@ -130,7 +130,7 @@ const Cores = ({ cpus }: { cpus: CPU[] }) => (
 						{cpu.cores.performance ?? 0}P / {cpu.cores.efficient ?? 0}E
 					</>
 				) : (
-					cpu.cores.total ?? "Unknown"
+					(cpu.cores.total ?? "Unknown")
 				)}
 			</span>
 		))}

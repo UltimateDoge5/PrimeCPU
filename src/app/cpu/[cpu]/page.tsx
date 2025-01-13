@@ -1,85 +1,76 @@
 import { Fragment } from "react";
-import type { CPU } from "../../../../CPU";
-import { fetchCPUEdge } from "@/util/fetchCPU";
-import { Redis } from "@upstash/redis";
-import Refetch from "../../../components/refetch";
+import type { CPU } from "@/types/cpu";
 import type { Table } from "@/util/renderers";
 import { RenderTable } from "@/util/renderers";
+import { Metadata } from "next";
+import { openGraph, twitter } from "../../shared-metadata";
+import { notFound } from "next/navigation";
+import client from "@/util/mongo";
 
-const redis = Redis.fromEnv();
+async function fetchCPUServer(model: string): Promise<CPU | null> {
+	model = model.toLowerCase();
 
-// export async function generateMetadata({ searchParams }: { searchParams: { cpu: string } }): Promise<Metadata> {
-// 	console.log(searchParams.cpu);
-// 	const cpu = await fetchCPUEdge(redis, searchParams.cpu, false);
-//
-// 	return {
-// 		title: `${cpu.name} | PrimeCPU`,
-// 		description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
-// 		openGraph: {
-// 			...openGraph,
-// 			title: `${cpu.name} | PrimeCPU`,
-// 			description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
-// 			type: "website",
-// 			url: `https://prime.pkozak.org/cpu/${searchParams.cpu}`,
-// 			images: [
-// 				{
-// 					url: `/cpu/${searchParams.cpu}/image`,
-// 					width: 1200,
-// 					height: 630,
-// 					alt: `${cpu.name} processor description`,
-// 				},
-// 			],
-// 		},
-// 		twitter: {
-// 			...twitter,
-// 			title: `${cpu.name} | PrimeCPU`,
-// 			description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
-// 			images: [
-// 				{
-// 					url: `/cpu/${searchParams.cpu}/image`,
-// 					width: 1200,
-// 					height: 630,
-// 					alt: `${cpu.name} processor description`,
-// 				},
-// 			],
-// 		},
-// 	};
-// }
+	if (/(core[- ]i\d)(?!.)|(core[- ]i\d[- ])(?!.)/gi.test(model.trim().toLowerCase()) || model.trim().toLowerCase() === "core") {
+		notFound();
+	}
+
+	return client
+		.db("primecpu")
+		.collection("cpus")
+		.findOne<CPU>({ model: model.replaceAll(" ", "-") });
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ cpu: string }> }): Promise<Metadata> {
+	const cpuName = (await params).cpu;
+	const cpu = await fetchCPUServer(cpuName);
+
+	if (cpu === null) return {};
+
+	return {
+		title: `${cpu.name} | PrimeCPU`,
+		description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
+		openGraph: {
+			...openGraph,
+			title: `${cpu.name} | PrimeCPU`,
+			description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
+			type: "website",
+			url: `https://prime.pkozak.org/cpu/${cpuName}`,
+			images: [
+				{
+					url: `/cpu/${cpuName}/image`,
+					width: 1200,
+					height: 630,
+					alt: `${cpu.name} processor description`,
+				},
+			],
+		},
+		twitter: {
+			...twitter,
+			title: `${cpu.name} | PrimeCPU`,
+			description: `Here you'll find all the information you need about the ${cpu.name} processor.`,
+			images: [
+				{
+					url: `/cpu/${cpuName}/image`,
+					width: 1200,
+					height: 630,
+					alt: `${cpu.name} processor description`,
+				},
+			],
+		},
+	};
+}
 
 const Page = async ({ params }: { params: Promise<{ cpu: string }> }) => {
 	const cpuName = (await params).cpu;
-	let cpu = await fetchCPUEdge(redis, cpuName, false);
+	let cpu = await fetchCPUServer(cpuName);
 
-	// Check cpu for null values if there are too many above a certain threshold, refetch
-	let nulls = 0;
-	for (const key in cpu) {
-		if (cpu[key as keyof typeof cpu] === null) nulls++;
-	}
-
-	if (nulls >= 6) {
-		if (cpu.fromCache === true) {
-			cpu = await fetchCPUEdge(redis, cpuName, true);
-
-			// Check again
-			nulls = 0;
-			for (const key in cpu) {
-				if (cpu[key as keyof typeof cpu] === null) nulls++;
-			}
-			console.log(nulls);
-
-			// If there are still too many nulls, return error
-			if (nulls >= 6) return <ErrorScreen />;
-		} else {
-			return <ErrorScreen />;
-		}
-	}
+	if (cpu === null) notFound();
 
 	return (
 		<>
 			<main className="text-white">
 				<header className="my-4 flex justify-center gap-4">
 					<h1 className="text-3xl">{cpu.name}</h1>
-					<Refetch modelPath={cpuName} />
 				</header>
 				<div className="mx-auto w-full border-0 border-gray-200/50 bg-white/20 p-4 text-lg md:mb-12 md:w-3/5 md:rounded-md md:border md:p-6">
 					<RenderTable cpu={cpu} list={TableStructure} />

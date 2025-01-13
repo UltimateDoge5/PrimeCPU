@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 // Non-relative import breaks tests
-import { getMemoryDetails } from "../src/util/scrapers/amd";
+import { getMemoryDetails } from "../src/util/memory";
 
 /**
  *  System Memory Type  DDR4 - Up to 3200MHz
@@ -8,13 +8,12 @@ import { getMemoryDetails } from "../src/util/scrapers/amd";
  * Source {@link https://www.amd.com/en/product/10821}
  */
 test("Memory variant no.1", () => {
-	const result = getMemoryDetails({
-		memory: `
-    DDR4 - Up to 3200MHz
-	LPDDR4 - Up to 4266MHz`,
-		sysMemSpecs: null,
-		maxMemSpeeds: null,
-	});
+	const result = getMemoryDetails(
+		`DDR4 - Up to 3200MHz
+		 LPDDR4 - Up to 4266MHz`,
+		null,
+		null
+	);
 
 	expect(result).toEqual([
 		{
@@ -34,7 +33,7 @@ test("Memory variant no.1", () => {
  * Source {@link https://www.amd.com/en/product/8456}
  */
 test("Memory variant no.2", () => {
-	const result = getMemoryDetails({ memory: "DDR4", sysMemSpecs: 2667, maxMemSpeeds: null });
+	const result = getMemoryDetails("DDR4", 2667, null);
 
 	expect(result).toEqual([
 		{
@@ -52,21 +51,18 @@ test("Memory variant no.2", () => {
  *  Source {@link https://www.amd.com/en/product/13041}
  */
 test("Memory variant no.3", () => {
-	const result = getMemoryDetails({
-		memory: `
-        DDR5 (FP7r2)
+	const result = getMemoryDetails(
+		`DDR5 (FP7r2)
         LPDDR5/x (FP7, FP8)
         `,
-		sysMemSpecs: null,
-		maxMemSpeeds: `
+		null,
+		`
         4x2R
         DDR5-5600
 
         4x2R
-        LPDDR5x-7500
-        `,
-	});
-
+        LPDDR5x-7500`
+	);
 	expect(result).toEqual([
 		{
 			type: "DDR5",
@@ -87,17 +83,15 @@ test("Memory variant no.3", () => {
  *  Source {@link https://www.amd.com/en/product/13016}
  */
 test("Memory variant no.4", () => {
-	const result = getMemoryDetails({
-		memory: `DDR5`,
-		sysMemSpecs: null,
-		maxMemSpeeds: `
-        2x1R
+	const result = getMemoryDetails(
+		 `DDR5`,
+		null,
+        `2x1R
         DDR5-5200
 
         2x2R
-        DDR5-5200
-        `,
-	});
+        DDR5-5200`,
+	);
 
 	expect(result).toEqual([
 		{
